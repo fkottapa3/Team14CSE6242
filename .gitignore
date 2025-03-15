@@ -1,0 +1,12 @@
+# Ignore all executable binaries
+.exe
+.dll
+.bin
+.msi
+*.exe
+*.csv
+cse6242/Lib/
+cse6242/Scripts/
+software/
+CSE6242/HW3/d1K8VBrqlP_hw3/Q4/yellow_tripdata09-08-2021.csv
+CSE6242/software/Tableau/
