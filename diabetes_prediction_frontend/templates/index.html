@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diabetes Prediction Form</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg,rgb(199, 191, 191),rgb(202, 202, 202));
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      flex-direction: column;
+      padding: 0 20px;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #fff;
+    }
+
+    .container {
+      background-color: white;
+      padding: 30px 40px;
+      border-radius: 15px;
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+      width: 600px;
+      max-width: 90%;
+      margin-bottom: 20px;
+      height: auto;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px 15px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      outline: none;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+    }
+
+    .form-input:focus {
+      border-color: #007bff;
+      box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .progress-bar-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 30px;
+      width: 700px; /* Same width as container */
+      position: relative;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 40px;
+      background-color: #e0e0e0;
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-right: 20px; /* Add space between progress bar and percentage */
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .person-icon {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      transform: translate(-50%, -50%) scale(1.2);
+      transition: left 0.5s ease-in-out;
+      color: #007bff;
+      font-size: 24px;
+    }
+
+    .percentage-text {
+      font-size: 18px;
+      font-weight: bold;
+      color: #007bff;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      left: 100%; /* Position the percentage outside the bar */
+      margin-left: 10px; /* Space between the progress bar and percentage text */
+    }
+
+    .input-icon {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+
+    .input-icon label {
+      flex: 1.5;
+      margin-right: 10px;
+      font-size: 14px;
+    }
+
+    .input-icon i {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #555;
+    }
+
+    .input-icon input, .input-icon select {
+      flex: 3;
+      padding-left: 10px;
+      padding-right: 10px;
+      width: 100%;
+      height: 36px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .input-icon select {
+      height: 36px;
+    }
+
+    .chart-container {
+      width: 80%;
+      margin-left: auto;
+      margin: auto;
+    }
+
+    svg {
+      background-color: #f4f4f4;
+    }
+
+    .tooltip {
+      position: absolute;
+      background-color: rgba(0, 0, 0, 0.75);
+      color: white;
+      padding: 5px;
+      border-radius: 3px;
+      visibility: hidden;
+      font-size: 12px;
+    }
+
+  </style>
+</head>
+<body>
+  <h2>Diabetes Risk Prediction</h2>
+
+  <div class="container">
+    <div class="input-icon">
+      <label for="smoking_history" style="text-align: left; display: block;">Smoking History</label>
+      <i class="fas fa-smoking"></i>
+      <select class="form-input" name="smoking_history" required>
+        <option value="" disabled selected>Select Smoking History</option>
+        <option value="never">Never</option>
+        <option value="former">Former</option>
+        <option value="current">Current</option>
+        <option value="ever">Ever</option>
+      </select>
+    </div>
+
+    <div class="input-icon">
+      <label for="hypertension" style="text-align: left; display: block;">Hypertension</label>
+      <i class="fas fa-heartbeat"></i>
+      <select class="form-input" name="hypertension" required>
+        <option value="" disabled selected>Do you have Hypertension?</option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
+    </div>
+  
+    <div class="input-icon">
+      <label for="heart_disease" style="text-align: left; display: block;">Heart Disease</label>
+      <i class="fas fa-heart"></i>
+      <select class="form-input" name="heart_disease" required>
+        <option value="" disabled selected>Do you have Heart Disease?</option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
+    </div>
+
+    <div class="input-icon">
+      <label for="bmi" style="text-align: left; display: block;">BMI</label>
+      <i class="fas fa-weight"></i>
+      <input class="form-input" type="number" name="bmi" step="any" placeholder="Body Mass Index (kg/m²) eg. 23.1" required>
+    </div>
+
+    <div class="input-icon">
+      <label for="HbA1c_level" style="text-align: left; display: block;">HbA1c Level</label>
+      <i class="fas fa-vial"></i>
+      <input class="form-input" type="number" name="HbA1c_level" step="any" placeholder="HbA1c Level (%) eg. 5.7" required>
+    </div>
+
+    <div class="input-icon">
+      <i class="fas fa-tint"></i>
+      <label for="blood_glucose_level" style="text-align: left; display: block;">Blood Glucose Level </label>
+      <input class="form-input" type="number" name="blood_glucose_level" step="any" placeholder="Blood Glucose Level (mg/dL) eg. 100" required>
+    </div>
+
+    <div class="input-icon">
+      <label for="age" style="text-align: left; display: block;">Age</label>
+
+      <i class="fas fa-user"></i>
+      <input class="form-input" type="number" name="age" step="any" placeholder="Age (years) eg. 34" required>
+    </div>
+
+    <button id="predict-btn">Predict</button>
+  </div>
+
+  <div class="progress-bar-container">
+    <div class="progress-bar">
+      <div class="person-icon">
+        <i class="fas fa-person-walking"></i>
+      </div>
+    </div>
+    <div id="percentage-text" class="percentage-text">0%</div>
+  </div>
+
+  <div class="chart-container">
+    <svg id="chart" width="900" height="500"></svg>
+  </div>
+
+  <div class="tooltip" id="tooltip"></div>
+
+  <script>
+    // Declare variables globally
+let g, x, y, tooltip, legend, diabetesCategories;
+
+    document.getElementById('predict-btn').addEventListener('click', async () => {
+      const formData = {
+        smoking_history: document.querySelector('select[name="smoking_history"]').value,
+        hypertension: document.querySelector('select[name="hypertension"]').value,
+        heart_disease: document.querySelector('select[name="heart_disease"]').value,
+        bmi: document.querySelector('input[name="bmi"]').value,
+        HbA1c_level: document.querySelector('input[name="HbA1c_level"]').value,
+        blood_glucose_level: document.querySelector('input[name="blood_glucose_level"]').value,
+        age: document.querySelector('input[name="age"]').value
+      };
+
+      if (!formData.smoking_history) {
+        alert("Please select a smoking history.");
+        return;
+      }
+
+      document.getElementById('predict-btn').disabled = true;
+
+      try {
+        const response = await fetch('/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+        const prediction = data.prediction;
+
+        const personIcon = document.querySelector('.person-icon');
+        const percentageText = document.getElementById('percentage-text');
+
+        const safeLeft = Math.min(Math.max(prediction * 100, 1), 99); // Clamp between 1% and 99%
+ // Use 0.05 as a threshold, or choose a value that works best for you
+
+
+        personIcon.style.left = `calc(${safeLeft}% - 12px)`;
+        const flooredPercentage = Math.floor(prediction * 1000) / 10;
+
+        percentageText.textContent = `${flooredPercentage.toFixed(1)}%`;
+
+          // Plot new predicted point
+    const newPoint = {
+      ...formData,
+      age: parseFloat(formData.age),
+      bmi: parseFloat(formData.bmi),
+      HbA1c_level: parseFloat(formData.HbA1c_level),
+      blood_glucose_level: parseFloat(formData.blood_glucose_level),
+      diabetes: prediction < 0.5 ? 0 : 1
+    };
+
+    g.append("circle")
+      .datum(newPoint)
+      .attr("class", "dot predicted-dot")
+      .attr("cx", d => x(d.age))
+      .attr("cy", d => y(d.bmi))
+      .attr("r", 6)
+      .attr("fill", "red")
+      .attr("stroke", "black")
+      .attr("stroke-width", 1.5)
+      .on("mouseover", function (event, d) {
+        tooltip.style("visibility", "visible")
+          .html(`
+            <strong>Age:</strong> ${d.age} years<br>
+            <strong>Smoking History:</strong> ${d.smoking_history}<br>
+            <strong>BMI:</strong> ${d.bmi} kg/m²<br>
+            <strong>HbA1c Level:</strong> ${d.HbA1c_level} %<br>
+            <strong>Blood Glucose Level:</strong> ${d.blood_glucose_level} mg/dL<br>
+            <strong><span style="color:red">New Prediction</span></strong>
+          `);
+        d3.select(this).attr("r", 9).attr("fill", "orange");
+      })
+      .on("mousemove", function (event) {
+        tooltip.style("top", (event.pageY - 10) + "px")
+          .style("left", (event.pageX + 10) + "px");
+      })
+      .on("mouseout", function () {
+        tooltip.style("visibility", "hidden");
+        d3.select(this).attr("r", 6).attr("fill", "red");
+      });
+
+    // Add legend for predicted point if not already added
+    if (!document.querySelector('#predicted-legend')) {
+      const legendRow = legend.append("g")
+        .attr("id", "predicted-legend")
+        .attr("transform", `translate(0, ${diabetesCategories.length * 20})`);
+
+      legendRow.append("rect")
+        .attr("width", 12)
+        .attr("height", 12)
+        .attr("fill", "red");
+
+      legendRow.append("text")
+        .attr("x", 20)
+        .attr("y", 10)
+        .text("Predicted Entry")
+        .style("font-size", "12px")
+        .attr("alignment-baseline", "middle");
+    }
+
+    //  Reload page after 3 seconds
+    setTimeout(() => {
+      window.location.reload();
+    }, 100000);
+
+      } catch (error) {
+        console.error("Error fetching prediction:", error);
+        alert("Failed to get prediction. Please try again.");
+      } finally {
+        document.getElementById('predict-btn').disabled = false;
+      }
+    });
+
+    fetch('/data')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Data fetch failed');
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Fetched data:', data);
+        
+            // Create the chart SVG
+    const svg = d3.select("#chart"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
+
+const margin = { top: 20, right: 30, bottom: 40, left: 40 },
+    chartWidth = width - margin.left - margin.right,
+    chartHeight = height - margin.top - margin.bottom;
+
+ g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+// Define scales for X and Y axes
+ x = d3.scaleLinear()
+  .domain([0, d3.max(data, d => parseFloat(d.age))]) 
+  .nice()
+  .range([0, chartWidth]);
+
+ y = d3.scaleLinear()
+  .domain([0, d3.max(data, d => parseFloat(d.bmi))]) 
+  .nice()
+  .range([chartHeight, 0]);
+
+// Add axes to the chart
+g.append("g")
+  .attr("transform", `translate(0,${chartHeight})`)
+  .call(d3.axisBottom(x));
+
+  // Add X axis label
+g.append("text")
+.attr("transform", `translate(${chartWidth / 2}, ${chartHeight + margin.bottom - 10})`)
+.style("text-anchor", "middle")
+.text("Age");
+
+// Add Y axis label
+g.append("text")
+.attr("transform", "rotate(-90)")
+.attr("y", -margin.left + 15)
+.attr("x", -chartHeight / 2)
+.style("text-anchor", "middle")
+.text("BMI");
+
+g.append("g")
+  .call(d3.axisLeft(y));
+
+// Tooltip for displaying data on hover
+ tooltip = d3.select("#tooltip");
+const colorScale = d3.scaleOrdinal(d3.schemeCategory10);  // You can use any color scheme you prefer
+
+
+// Define the legend position
+ legend = g.append("g")
+.attr("transform", `translate(${chartWidth - 150}, 20)`);
+
+// Unique diabetes values
+ diabetesCategories = [...new Set(data.map(d => d.diabetes))];
+
+// Add legend items
+diabetesCategories.forEach((category, index) => {
+const legendRow = legend.append("g")
+   .attr("transform", `translate(0, ${index * 20})`);
+
+legendRow.append("rect")
+   .attr("width", 12)
+   .attr("height", 12)
+   .attr("fill", colorScale(category));
+
+legendRow.append("text")
+   .attr("x", 20)
+   .attr("y", 10)
+   .text(`Diabetes: ${category}`)
+   .style("font-size", "12px")
+   .attr("alignment-baseline", "middle");
+});
+
+g.append("text")
+.attr("x", chartWidth / 2)
+.attr("y", -3)
+.attr("text-anchor", "middle")
+.style("font-size", "18px")
+.style("font-weight", "bold")
+.text("DATA VISUALIZATION (BMI VS AGE)");
+
+
+
+
+
+// Plot the dots
+g.selectAll(".dot")
+  .data(data)
+  .enter().append("circle")
+  .attr("class", "dot")
+  .attr("cx", d => x(parseFloat(d.age
+  )))  // Use 'age' for X axis
+  .attr("cy", d => y(parseFloat(d.bmi)))  // Use 'blood_glucose_level' for Y axis
+  .attr("r", 5)
+  .attr("fill", d => colorScale(d.diabetes))
+  .on("mouseover", function(event, d) {
+    tooltip.style("visibility", "visible")
+           .html(`
+              <strong>Age:</strong> ${d.age} years<br>
+              <strong>Smoking History:</strong> ${d.smoking_history}<br>
+              <strong>BMI:</strong> ${d.bmi} kg/m²<br>
+              <strong>HbA1c Level:</strong> ${d.HbA1c_level} %<br>
+              <strong>Blood Glucose Level:</strong> ${d.blood_glucose_level} mg/dL
+    
+           `);
+    d3.select(this).attr("r", 8).attr("fill", "orange");
+  })
+  .on("mousemove", function(event) {
+    tooltip.style("top", (event.pageY - 10) + "px")
+           .style("left", (event.pageX + 10) + "px");
+  })
+  .on("mouseout", function() {
+    tooltip.style("visibility", "hidden");
+    d3.select(this).attr("r", 5).attr("fill", d => colorScale(d.diabetes));
+  });
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+        alert('Error fetching data, check the console for details.');
+      });
+
+
+
+
+
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
